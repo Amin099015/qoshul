@@ -21,7 +21,7 @@ function errorText(status: number, message: string) {
 function buildRequest(body: Body) {
   if (body.mode === 'chat') {
     return {
-      instructions: `Sən Qoshul.az tətbiqinin köməkçisisən. İstifadəçilərə Azərbaycanda tədbir tapmağa və yaratmağa kömək edirsən. ${AZ} Qısa və konkret ol. Yalnız aşağıdakı siyahıdakı tədbirləri tövsiyə et, uydurma tədbir adı vermə. İstifadəçinin seçdiyi şəhər: ${body.city}.\nMövcud tədbirlər:\n${body.events.slice(0, 12000)}`,
+      instructions: `Sən Qoshul.az tətbiqinin köməkçisisən. İstifadəçilərə Azərbaycanda tədbir tapmağa və yaratmağa kömək edirsən. ${AZ} Qısa və konkret ol. Markdown işarələri (**, #) istifadə etmə; siyahını hər bəndi yeni sətirdə "• " ilə yaz. Yalnız aşağıdakı siyahıdakı tədbirləri tövsiyə et, uydurma tədbir adı vermə. İstifadəçinin seçdiyi şəhər: ${body.city}.\nMövcud tədbirlər:\n${body.events.slice(0, 12000)}`,
       input: body.messages.slice(-12).map(m => ({ role: m.role, content: m.content.slice(0, 2000) })),
     };
   }
