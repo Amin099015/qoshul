@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as PartnersRouteImport } from './routes/partners'
@@ -19,6 +20,11 @@ import { Route as ApiAiRouteImport } from './routes/api/ai'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsRoute = ChatsRouteImport.update({
@@ -49,6 +55,7 @@ const ApiAiRoute = ApiAiRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
@@ -74,12 +83,27 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chats' | '/explore' | '/partners' | '/profile' | '/api/ai'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/chats'
+    | '/explore'
+    | '/partners'
+    | '/profile'
+    | '/api/ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chats' | '/explore' | '/partners' | '/profile' | '/api/ai'
+  to:
+    | '/'
+    | '/assistant'
+    | '/chats'
+    | '/explore'
+    | '/partners'
+    | '/profile'
+    | '/api/ai'
   id:
     | '__root__'
     | '/'
+    | '/assistant'
     | '/chats'
     | '/explore'
     | '/partners'
@@ -89,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
   ChatsRoute: typeof ChatsRoute
   ExploreRoute: typeof ExploreRoute
   PartnersRoute: typeof PartnersRoute
@@ -103,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chats': {
@@ -145,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
   ChatsRoute: ChatsRoute,
   ExploreRoute: ExploreRoute,
   PartnersRoute: PartnersRoute,
