@@ -90,6 +90,14 @@
 .story { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: var(--muted-foreground); font-size: 9px; min-width: 49px; }
 .story-ring { width: 49px; height: 49px; padding: 3px; border: 1.5px solid var(--primary); border-radius: 50%; }
 .story-ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.story-ring img, .person-card img, .avatar-stack img { object-position: var(--avatar-position, center); }
+.avatar-leyla { --avatar-position: 12% 30%; }
+.avatar-rashad { --avatar-position: 48% 28%; }
+.avatar-nigar { --avatar-position: 38% 30%; }
+.avatar-orkhan { --avatar-position: 16% 42%; }
+.avatar-aysel { --avatar-position: 92% 34%; }
+.story-ring img, .person-card img { object-fit: none; }
+.story-ring img { object-fit: cover; transform: scale(1); }
 .story-ring.add-story { display: grid; place-items: center; color: var(--primary); background: var(--secondary); border: 1px dashed color-mix(in oklch, var(--primary) 40%, transparent); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
 .section-heading h2 { display: flex; align-items: center; gap: 7px; font-size: 18px; font-weight: 800; }
@@ -162,7 +170,9 @@
 .profile-stats { display: flex; justify-content: space-around; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 0; margin: 4px 0 23px; }
 .profile-stat { text-align: center; }
 .profile-stat strong { display: block; font-size: 21px; font-weight: 800; }
+.profile-stat strong.flex { display: flex; }
 .profile-stat span { font-size: 10px; color: var(--muted-foreground); }
+.profile-avatar { object-position: 61% 33%; }
 .interest-tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 13px 0 23px; }
 .interest-tags span { padding: 7px 11px; background: var(--secondary); color: var(--primary); font-size: 10px; border-radius: 5px; }
 .chat-list { display: flex; flex-direction: column; }
