@@ -49,6 +49,8 @@ function buildRequest(body: Body) {
 export async function handleAi(request: Request) {
   const apiKey = process.env['LOVABLE_API_KEY'];
   if (!apiKey) return Response.json({ error: 'AI xidməti qurulmayıb.' }, { status: 500 });
+  const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  if (!token || !(await verifyUser(token))) return Response.json({ error: 'Davam etmək üçün daxil ol.' }, { status: 401 });
   let body: Body;
   try { body = await request.json(); } catch { return Response.json({ error: 'Yanlış sorğu.' }, { status: 400 }); }
   if (!body || !['chat', 'suggest', 'recommend'].includes((body as Body).mode)) return Response.json({ error: 'Yanlış sorğu.' }, { status: 400 });
@@ -87,4 +89,39 @@ export async function handleAi(request: Request) {
     },
   }));
   return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache, no-transform' } });
+}
+
+async function verifyUser(token: string) {
+  const url = process.env['SUPABASE_URL']; const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if (!url || !key) return false;
+  const r = await fetch(`${url}/auth/v1/user`, { headers: { apikey: key, Authorization: `Bearer ${token}` } });
+  return r.ok;
+}
+
+/** Streams a Responses call with a strict JSON schema and returns the parsed object. */
+export async function aiJson<T>(instructions: string, input: string, name: string, schema: Record<string, unknown>): Promise<T> {
+  const apiKey = process.env['LOVABLE_API_KEY'];
+  if (!apiKey) throw new Error('AI xidməti qurulmayıb.');
+  const res = await fetch(GATEWAY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Lovable-API-Key': apiKey, 'X-Lovable-AIG-SDK': 'fetch' },
+    body: JSON.stringify({ model: MODEL, stream: true, store: false, reasoning: { effort: 'low' }, instructions, input: [{ role: 'user', content: input }], text: { format: { type: 'json_schema', name, strict: true, schema } } }),
+  });
+  if (!res.ok || !res.body) {
+    let message = '';
+    try { const j = await res.json() as { error?: { message?: string } | string }; message = typeof j.error === 'string' ? j.error : j.error?.message ?? ''; } catch { /* ignore */ }
+    throw new Error(errorText(res.status, message));
+  }
+  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = ''; let text = '';
+  for (;;) {
+    const { done, value } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const frames = buf.split('\n\n'); buf = frames.pop() ?? '';
+    for (const f of frames) {
+      const data = f.split('\n').filter(l => l.startsWith('data:')).map(l => l.slice(5).trim()).join('');
+      if (!data || data === '[DONE]') continue;
+      try { const ev = JSON.parse(data) as { type?: string; delta?: string }; if (ev.type === 'response.output_text.delta' && ev.delta) text += ev.delta; if (ev.type === 'response.failed') throw new Error('AI cavabı alınmadı.'); } catch (e) { if (e instanceof Error && e.message.startsWith('AI')) throw e; }
+    }
+  }
+  return JSON.parse(text) as T;
 }
