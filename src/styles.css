@@ -239,3 +239,19 @@ textarea.form-input { height: 85px; padding-top: 11px; resize: vertical; }
   .view-heading h1 { font-size: 25px; }
 }
 @media (prefers-reduced-motion: no-preference) { .page-content { animation: enter .35s ease-out; } @keyframes enter { from { opacity: .4; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } } }
+
+.event-map { height: 320px; width: 100%; border-radius: 18px; overflow: hidden; margin: 10px 0; z-index: 0; border: 1px solid var(--border); }
+.map-loading { display: grid; place-items: center; background: var(--muted); color: var(--muted-foreground); font-size: 13px; }
+.map-pin span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--primary); color: var(--primary-foreground); font-size: 11px; font-weight: 700; box-shadow: var(--soft-shadow); }
+.map-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+.map-toolbar span { display: flex; align-items: center; gap: 6px; }
+.form-hint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted-foreground); margin-top: 6px; }
+.form-error { font-size: 13px; color: var(--destructive); margin-top: 6px; }
+.ai-box { border: 1px dashed var(--primary); background: color-mix(in oklab, var(--primary) 6%, var(--card)); border-radius: 16px; padding: 12px; margin: 10px 0; }
+.ai-reason { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted-foreground); padding: 6px 4px 0; }
+.city-list { max-height: 320px; overflow-y: auto; display: grid; gap: 4px; }
+.city-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 12px; text-align: left; font-size: 14px; }
+.city-item span { font-size: 12px; color: var(--muted-foreground); }
+.city-item:hover, .city-item.active { background: var(--secondary); }
+.city-item.active strong { color: var(--primary); }
+.interest-tags button { cursor: pointer; }
