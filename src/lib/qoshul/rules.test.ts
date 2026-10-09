@@ -12,3 +12,14 @@ describe('rank thresholds', () => {
 it('does not let participants join a full event', () => expect(canJoin(8,8,false)).toBe(false));
 it('prevents duplicate joins', () => expect(canJoin(3,8,true)).toBe(false));
 it('allows joining when places remain', () => expect(canJoin(3,8,false)).toBe(true));
+import { distanceKm } from './rules';
+import { cities } from './cities';
+import { allCategories } from './categories';
+describe('distanceKm', () => {
+  it('is 0 for same point', () => expect(distanceKm({ lat: 40.4, lng: 49.8 }, { lat: 40.4, lng: 49.8 })).toBe(0));
+  it('Bakı–Gəncə is about 300 km', () => { const d = distanceKm({ lat: 40.4093, lng: 49.8671 }, { lat: 40.6828, lng: 46.3606 }); expect(d).toBeGreaterThan(290); expect(d).toBeLessThan(305); });
+});
+describe('catalogs', () => {
+  it('lists all major Azerbaijani cities', () => { for (const n of ['Bakı','Gəncə','Sumqayıt','Naxçıvan','Şuşa','Xankəndi','Lənkəran','Şəki']) expect(cities.some(c => c.name === n)).toBe(true); });
+  it('has 60+ categories', () => expect(allCategories.length).toBeGreaterThanOrEqual(60));
+});
