@@ -8,3 +8,8 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## App architecture
+- Keep Qoshul's mobile shell and sample event state in shared browser-safe components and context so all content routes share navigation and event actions.
+- This mobile variation uses in-memory demo data; do not present mock matching or messages as connected AI or realtime services.
+- Define product rules in a pure module with focused tests so XP and rank boundaries remain consistent across screens.
