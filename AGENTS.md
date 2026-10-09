@@ -13,3 +13,6 @@
 - Keep Qoshul's mobile shell and sample event state in shared browser-safe components and context so all content routes share navigation and event actions.
 - This mobile variation uses in-memory demo data; do not present mock matching or messages as connected AI or realtime services.
 - Define product rules in a pure module with focused tests so XP and rank boundaries remain consistent across screens.
+- Cities and categories live in pure catalog modules under src/lib/qoshul so every screen and the AI prompts share one list.
+- Maps load Leaflet only in the browser via a lazy wrapper, because Leaflet touches window and would break SSR.
+- AI calls go through one server route that streams plain text from the gateway, so the key stays server-side and the UI can stream.

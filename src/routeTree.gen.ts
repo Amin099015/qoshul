@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ChatsRouteImport } from './routes/chats'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ApiAiRouteImport } from './routes/api/ai'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatsRoute = ChatsRouteImport.update({
@@ -40,43 +47,78 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiRoute = ApiAiRouteImport.update({
+  id: '/api/ai',
+  path: '/api/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
+  '/api/ai': typeof ApiAiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
+  '/api/ai': typeof ApiAiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
   '/chats': typeof ChatsRoute
   '/explore': typeof ExploreRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
+  '/api/ai': typeof ApiAiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chats' | '/explore' | '/partners' | '/profile'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/chats'
+    | '/explore'
+    | '/partners'
+    | '/profile'
+    | '/api/ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chats' | '/explore' | '/partners' | '/profile'
-  id: '__root__' | '/' | '/chats' | '/explore' | '/partners' | '/profile'
+  to:
+    | '/'
+    | '/assistant'
+    | '/chats'
+    | '/explore'
+    | '/partners'
+    | '/profile'
+    | '/api/ai'
+  id:
+    | '__root__'
+    | '/'
+    | '/assistant'
+    | '/chats'
+    | '/explore'
+    | '/partners'
+    | '/profile'
+    | '/api/ai'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
   ChatsRoute: typeof ChatsRoute
   ExploreRoute: typeof ExploreRoute
   PartnersRoute: typeof PartnersRoute
   ProfileRoute: typeof ProfileRoute
+  ApiAiRoute: typeof ApiAiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chats': {
@@ -116,15 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai': {
+      id: '/api/ai'
+      path: '/api/ai'
+      fullPath: '/api/ai'
+      preLoaderRoute: typeof ApiAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
   ChatsRoute: ChatsRoute,
   ExploreRoute: ExploreRoute,
   PartnersRoute: PartnersRoute,
   ProfileRoute: ProfileRoute,
+  ApiAiRoute: ApiAiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
