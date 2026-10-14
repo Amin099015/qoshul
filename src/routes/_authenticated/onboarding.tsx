@@ -14,7 +14,7 @@ export const Route = createFileRoute('/_authenticated/onboarding')({
   component: Onboarding,
 });
 
-type Form = Record<string, string> & {};
+type Form = { first_name: string; last_name: string; birth_date: string; gender: string; city: string; status: string; [k: string]: string };
 const STEPS = ['Əsas məlumat', 'Təhsil və iş', 'Dillər', 'Maraqlar', 'Məqsədlər', 'Şəxsiyyət testi', 'Açıq suallar', 'Üstünlüklər'];
 
 function Chips({ options, value, onToggle }: { options: string[]; value: string[]; onToggle: (v: string) => void }) {
