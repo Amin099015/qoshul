@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 
 export const Route = createFileRoute('/auth')({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: typeof s['redirect'] === 'string' && s['redirect'].startsWith('/') && !s['redirect'].startsWith('//') ? s['redirect'] : undefined }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string | undefined } => ({ redirect: typeof s['redirect'] === 'string' && s['redirect'].startsWith('/') && !s['redirect'].startsWith('//') ? s['redirect'] : undefined }),
   head: () => ({ meta: [{ title: 'Daxil ol — Qoshul.az' }, { name: 'description', content: 'Qoshul.az hesabına daxil ol və ya yeni hesab yarat.' }, { property: 'og:title', content: 'Daxil ol — Qoshul.az' }, { property: 'og:description', content: 'Yeni insanlara, yeni planlara qoşul.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
   component: AuthPage,
 });
