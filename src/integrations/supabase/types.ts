@@ -62,6 +62,7 @@ export type Database = {
           lng: number
           location: string
           partner: boolean
+          partner_id: string | null
           price: number
           recurring: string
           start_time: string
@@ -90,6 +91,7 @@ export type Database = {
           lng: number
           location: string
           partner?: boolean
+          partner_id?: string | null
           price?: number
           recurring?: string
           start_time?: string
@@ -118,6 +120,7 @@ export type Database = {
           lng?: number
           location?: string
           partner?: boolean
+          partner_id?: string | null
           price?: number
           recurring?: string
           start_time?: string
@@ -125,7 +128,15 @@ export type Database = {
           tags?: string[]
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       friendships: {
         Row: {
@@ -213,6 +224,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partners: {
+        Row: {
+          address: string
+          categories: string[]
+          city: string
+          created_at: string
+          deal: string
+          description: string
+          hours: string
+          id: string
+          image: string
+          is_sample: boolean
+          lat: number
+          lng: number
+          name: string
+          owner_id: string | null
+          phone: string
+          status: string
+          voen: string
+        }
+        Insert: {
+          address?: string
+          categories?: string[]
+          city?: string
+          created_at?: string
+          deal?: string
+          description?: string
+          hours?: string
+          id?: string
+          image?: string
+          is_sample?: boolean
+          lat: number
+          lng: number
+          name: string
+          owner_id?: string | null
+          phone?: string
+          status?: string
+          voen: string
+        }
+        Update: {
+          address?: string
+          categories?: string[]
+          city?: string
+          created_at?: string
+          deal?: string
+          description?: string
+          hours?: string
+          id?: string
+          image?: string
+          is_sample?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          owner_id?: string | null
+          phone?: string
+          status?: string
+          voen?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -322,6 +393,60 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          organizer_name: string
+          partner_id: string
+          people: number
+          start_time: string
+          starts_on: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          organizer_name?: string
+          partner_id: string
+          people?: number
+          start_time: string
+          starts_on: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          organizer_name?: string
+          partner_id?: string
+          people?: number
+          start_time?: string
+          starts_on?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string
@@ -380,6 +505,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -397,7 +540,15 @@ export type Database = {
           joined: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       match_candidates: { Args: never; Returns: string[] }
+      owns_partner: { Args: { _partner: string }; Returns: boolean }
       public_profile_cards: {
         Args: { _ids?: string[] }
         Returns: {
@@ -421,7 +572,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "partner" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -548,6 +699,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "partner", "user"],
+    },
   },
 } as const

@@ -8,6 +8,13 @@
       "when": 1791545836132,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792086067541,
+      "tag": "0001_partners_roles_reservations",
+      "breakpoints": true
     }
   ]
 }
