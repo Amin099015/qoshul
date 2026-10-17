@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import type { Database } from '@/integrations/supabase/types';
 import { eventInput } from './event-input';
+import { groupOf } from './categories';
 import { z } from 'zod';
 export const listEvents=createServerFn({method:'GET'}).handler(async()=>{
  const url=process.env['SUPABASE_URL']; const key=process.env['SUPABASE_PUBLISHABLE_KEY'];

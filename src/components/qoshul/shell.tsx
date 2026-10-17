@@ -4,13 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCallback, useState, type ReactNode } from 'react';
 import { useQoshul } from './context';
-import { coffee, friends, padel, tech, type Level } from '@/lib/qoshul/data';
 import { cities, findCity } from '@/lib/qoshul/cities';
-import { allCategories, categoryGroups, groupOf } from '@/lib/qoshul/categories';
+import { allCategories, categoryGroups } from '@/lib/qoshul/categories';
 import { LazyMap } from './lazy-map';
 import { streamAi } from './ai-client';
 const nav=[{to:'/' as const,label:'Ana səhifə',icon:Home},{to:'/explore' as const,label:'Kəşf et',icon:Compass},{to:'/chats' as const,label:'Söhbətlər',icon:MessageCircle},{to:'/profile' as const,label:'Profil',icon:User}];
-const imageFor=(cat:string)=>{const g=groupOf(cat);return g==='İdman'||g==='Təbiət'?padel:g==='Texnologiya'||g==='Təhsil'||g==='Biznes və karyera'?tech:g==='Yemək və içki'?coffee:friends;};
 
 export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolean;onOpenChange:(open:boolean)=>void;partner?:boolean}) {
  const {addEvent,profileName,city:currentCity}=useQoshul();
