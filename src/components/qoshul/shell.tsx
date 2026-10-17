@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Bell, Bot, ChevronDown, Compass, Home, Loader2, MapPin, MessageCircle, Plus, Search, ShieldCheck, User, Link2, Wand2 } from 'lucide-react';
+import { Bell, Bot, Compass, Handshake, Home, Loader2, MapPin, MessageCircle, Plus, Search, ShieldCheck, User, Link2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCallback, useState, type ReactNode } from 'react';
