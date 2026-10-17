@@ -50,7 +50,7 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  <label className="form-field">Tədbir haqqında<textarea required className="form-input" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Birlikdə nə edəcəyik?"/></label><Button type="submit" className="mt-5 w-full">Tədbir yarat <Plus/></Button></form></DialogContent></Dialog>;
 }
 
-function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>void}){
+export function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>void}){
  const {city,setCity,setMyPos}=useQoshul();const [q,setQ]=useState('');const [geoError,setGeoError]=useState('');
  const list=cities.filter(c=>c.name.toLocaleLowerCase('az').includes(q.toLocaleLowerCase('az')));
  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="qoshul-dialog"><DialogTitle>Şəhərini seç</DialogTitle><DialogDescription>Azərbaycanın {cities.length} şəhər və rayon mərkəzindən birini seç.</DialogDescription>
