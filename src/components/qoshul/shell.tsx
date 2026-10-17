@@ -1,16 +1,14 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Bell, Bot, ChevronDown, Compass, Home, Loader2, MapPin, MessageCircle, Plus, Search, ShieldCheck, User, Link2, Wand2 } from 'lucide-react';
+import { Bell, Bot, Compass, Handshake, Home, Loader2, MapPin, MessageCircle, Plus, Search, ShieldCheck, User, Link2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCallback, useState, type ReactNode } from 'react';
 import { useQoshul } from './context';
-import { coffee, friends, padel, tech, type Level } from '@/lib/qoshul/data';
 import { cities, findCity } from '@/lib/qoshul/cities';
-import { allCategories, categoryGroups, groupOf } from '@/lib/qoshul/categories';
+import { allCategories, categoryGroups } from '@/lib/qoshul/categories';
 import { LazyMap } from './lazy-map';
 import { streamAi } from './ai-client';
 const nav=[{to:'/' as const,label:'Ana səhifə',icon:Home},{to:'/explore' as const,label:'Kəşf et',icon:Compass},{to:'/chats' as const,label:'Söhbətlər',icon:MessageCircle},{to:'/profile' as const,label:'Profil',icon:User}];
-const imageFor=(cat:string)=>{const g=groupOf(cat);return g==='İdman'||g==='Təbiət'?padel:g==='Texnologiya'||g==='Təhsil'||g==='Biznes və karyera'?tech:g==='Yemək və içki'?coffee:friends;};
 
 export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolean;onOpenChange:(open:boolean)=>void;partner?:boolean}) {
  const {addEvent,profileName,city:currentCity}=useQoshul();
@@ -30,9 +28,9 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  }
  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="qoshul-dialog"><DialogTitle>Birlikdə yeni plan quraq</DialogTitle><DialogDescription>İstədiyin formada tədbir yarat və maraqlarını bölüşən insanlarla tanış ol.</DialogDescription>
  <div className="ai-box"><label className="form-field"><span className="flex items-center gap-2"><Wand2 size={14}/>AI köməkçisi: fikrini qısa yaz</span><input className="form-input" value={idea} onChange={e=>setIdea(e.target.value)} placeholder="Məsələn, şənbə səhəri dağa yürüş"/></label><Button type="button" variant="secondary" className="w-full mt-2" disabled={aiBusy||!idea.trim()} onClick={suggest}>{aiBusy?<><Loader2 className="animate-spin"/>Hazırlanır...</>:<><Wand2/>Tədbiri AI ilə doldur</>}</Button>{aiError&&<p className="form-error" role="alert">{aiError}</p>}</div>
- <form onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);const cat=category==='Digər'&&custom.trim()?custom.trim():category;const price=Number(f.get('price')||0);
-  addEvent({id:crypto.randomUUID(),title,category:cat,image:imageFor(category),city,location:format==='Onlayn'?'Onlayn görüş':String(f.get('location')),lat:point.lat,lng:point.lng,distance:0,date:String(f.get('date')),time,capacity,participants:1,match:90,host:profileName,description,
-   price:paid?price:0,ageLimit:String(f.get('age')),language:String(f.get('language')),level:String(f.get('level')) as Level,format,approval:f.get('approval')==='on',recurring:String(f.get('recurring')),tags:String(f.get('tags')||'').split(',').map(t=>t.trim()).filter(Boolean)},partner);onOpenChange(false);}}>
+  <form onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);const cat=category==='Digər'&&custom.trim()?custom.trim():category;const price=Number(f.get('price')||0);
+   addEvent({title,category:cat,city,location:format==='Onlayn'?'Onlayn görüş':String(f.get('location')),lat:point.lat,lng:point.lng,date:String(f.get('date')),time,capacity,description,
+    price:paid?price:0,ageLimit:String(f.get('age')||'Hamı üçün'),language:String(f.get('language')),level:String(f.get('level')),format,approval:f.get('approval')==='on',recurring:String(f.get('recurring')),tags:String(f.get('tags')||'').split(',').map(t=>t.trim()).filter(Boolean),partnerId:null});onOpenChange(false);}}>
  <label className="form-field">Tədbirin adı<input required maxLength={65} className="form-input" value={title} onChange={e=>setTitle(e.target.value)} placeholder="Məsələn, şənbə günü qəhvə görüşü"/></label>
  <label className="form-field">Kateqoriya<select className="form-input" value={category} onChange={e=>setCategory(e.target.value)}>{categoryGroups.map(g=><optgroup key={g.group} label={g.group}>{g.items.map(i=><option key={i}>{i}</option>)}</optgroup>)}</select></label>
  {category==='Digər'&&<label className="form-field">Öz kateqoriyanı yaz<input className="form-input" required value={custom} onChange={e=>setCustom(e.target.value)} maxLength={40}/></label>}
@@ -52,7 +50,7 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  <label className="form-field">Tədbir haqqında<textarea required className="form-input" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Birlikdə nə edəcəyik?"/></label><Button type="submit" className="mt-5 w-full">Tədbir yarat <Plus/></Button></form></DialogContent></Dialog>;
 }
 
-function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>void}){
+export function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>void}){
  const {city,setCity,setMyPos}=useQoshul();const [q,setQ]=useState('');const [geoError,setGeoError]=useState('');
  const list=cities.filter(c=>c.name.toLocaleLowerCase('az').includes(q.toLocaleLowerCase('az')));
  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="qoshul-dialog"><DialogTitle>Şəhərini seç</DialogTitle><DialogDescription>Azərbaycanın {cities.length} şəhər və rayon mərkəzindən birini seç.</DialogDescription>
@@ -62,6 +60,6 @@ function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>
 }
 
 export function Shell({children}:{children:ReactNode}) {
- const path=useLocation().pathname;const [create,setCreate]=useState(false);const [notifications,setNotifications]=useState(false);const [location,setLocation]=useState(false);const {joined,city,myPos}=useQoshul();
- return <div className="app-shell"><header className="app-header"><Link to="/" className="wordmark"><Link2 className="brand-mark" strokeWidth={3}/>qoshul<span>.az</span></Link><div className="header-tools"><Button variant="ghost" className="location-button" onClick={()=>setLocation(true)}><MapPin size={13}/>{myPos?'Mənim yerim':city}<ChevronDown size={11}/></Button><Button asChild variant="ghost" size="icon" aria-label="AI köməkçi"><Link to="/assistant"><Bot/></Link></Button><Button variant="ghost" size="icon" className="notification-button" aria-label="Bildirişlər" onClick={()=>setNotifications(true)}><Bell/><i className="notification-dot"/></Button></div></header><main className="page-content">{children}</main><nav className="bottom-nav" aria-label="Əsas naviqasiya">{nav.map((n,i)=><span key={n.to} className="contents">{i===2&&<span className="nav-create-wrap"><Button size="icon" className="create-nav" aria-label="Tədbir yarat" onClick={()=>setCreate(true)}><Plus/></Button><span>Yarat</span></span>}<Link to={n.to} className={`nav-link ${path===n.to?'active':''}`}><n.icon/><span>{n.label}</span></Link></span>)}</nav><CreateEventDialog key={city} open={create} onOpenChange={setCreate}/><Dialog open={notifications} onOpenChange={setNotifications}><DialogContent className="qoshul-dialog"><DialogTitle>Bildirişlər</DialogTitle><DialogDescription>Yeni görüşlər, yeni imkanlar.</DialogDescription><div className="community-banner"><ShieldCheck className="text-primary"/><div><h3>Qoshul.az-a xoş gəlmisən!</h3><p>Şəhərindəki insanlarla tanış olmaq üçün ilk tədbirinə qoşul.</p></div></div>{joined.length>0&&<p className="dialog-body">{joined.length} tədbirə qoşulmusan. Qrup söhbətlərində iştirakçılarla tanış ola bilərsən.</p>}</DialogContent></Dialog><CityPicker open={location} onOpenChange={setLocation}/></div>;
+ const path=useLocation().pathname;const [create,setCreate]=useState(false);const [notifications,setNotifications]=useState(false);const {joined,city}=useQoshul();
+ return <div className="app-shell"><header className="app-header"><Link to="/" className="wordmark"><Link2 className="brand-mark" strokeWidth={3}/>qoshul<span>.az</span></Link><div className="header-tools"><Button asChild variant="ghost" className="location-button"><Link to="/partners"><Handshake size={13}/>Tərəfdaşlar</Link></Button><Button asChild variant="ghost" size="icon" aria-label="AI köməkçi"><Link to="/assistant"><Bot/></Link></Button><Button variant="ghost" size="icon" className="notification-button" aria-label="Bildirişlər" onClick={()=>setNotifications(true)}><Bell/><i className="notification-dot"/></Button></div></header><main className="page-content">{children}</main><nav className="bottom-nav" aria-label="Əsas naviqasiya">{nav.map((n,i)=><span key={n.to} className="contents">{i===2&&<span className="nav-create-wrap"><Button size="icon" className="create-nav" aria-label="Tədbir yarat" onClick={()=>setCreate(true)}><Plus/></Button><span>Yarat</span></span>}<Link to={n.to} className={`nav-link ${path===n.to?'active':''}`}><n.icon/><span>{n.label}</span></Link></span>)}</nav><CreateEventDialog key={city} open={create} onOpenChange={setCreate}/><Dialog open={notifications} onOpenChange={setNotifications}><DialogContent className="qoshul-dialog"><DialogTitle>Bildirişlər</DialogTitle><DialogDescription>Yeni görüşlər, yeni imkanlar.</DialogDescription><div className="community-banner"><ShieldCheck className="text-primary"/><div><h3>Qoshul.az-a xoş gəlmisən!</h3><p>Şəhərindəki insanlarla tanış olmaq üçün ilk tədbirinə qoşul.</p></div></div>{joined.length>0&&<p className="dialog-body">{joined.length} tədbirə qoşulmusan. Qrup söhbətlərində iştirakçılarla tanış ola bilərsən.</p>}</DialogContent></Dialog></div>;
 }

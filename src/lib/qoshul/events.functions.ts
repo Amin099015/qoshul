@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import type { Database } from '@/integrations/supabase/types';
 import { eventInput } from './event-input';
+import { groupOf } from './categories';
 import { z } from 'zod';
 export const listEvents=createServerFn({method:'GET'}).handler(async()=>{
  const url=process.env['SUPABASE_URL']; const key=process.env['SUPABASE_PUBLISHABLE_KEY'];
@@ -14,7 +15,8 @@ export const listEvents=createServerFn({method:'GET'}).handler(async()=>{
 });
 export const createEvent=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator(d=>eventInput.parse(d)).handler(async({data,context})=>{
  const {data:p}=await context.supabase.from('profiles').select('first_name,last_name').eq('id',context.userId).single();
- const {data:row,error}=await context.supabase.from('events').insert({created_by:context.userId,host_name:[p?.first_name,p?.last_name].filter(Boolean).join(' '),title:data.title,category:data.category,city:data.city,location:data.location,lat:data.lat,lng:data.lng,starts_on:data.date,start_time:data.time,capacity:data.capacity,description:data.description,price:data.price,age_limit:data.ageLimit,language:data.language,level:data.level,format:data.format,approval:data.approval,recurring:data.recurring,tags:data.tags,partner_id:data.partnerId,image:'friends'}).select('id').single();
+ const g=groupOf(data.category);const image=g==='İdman'||g==='Təbiət'?'padel':g==='Texnologiya'||g==='Təhsil'||g==='Biznes və karyera'?'tech':g==='Yemək və içki'?'coffee':'friends';
+ const {data:row,error}=await context.supabase.from('events').insert({created_by:context.userId,host_name:[p?.first_name,p?.last_name].filter(Boolean).join(' '),title:data.title,category:data.category,city:data.city,location:data.location,lat:data.lat,lng:data.lng,starts_on:data.date,start_time:data.time,capacity:data.capacity,description:data.description,price:data.price,age_limit:data.ageLimit,language:data.language,level:data.level,format:data.format,approval:data.approval,recurring:data.recurring,tags:data.tags,partner_id:data.partnerId,image}).select('id').single();
  if(error)throw new Error(error.message);return row;
 });
 export const joinEvent=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator(d=>z.object({id:z.string().uuid()}).parse(d)).handler(async({data,context})=>{
