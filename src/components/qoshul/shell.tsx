@@ -2,15 +2,19 @@ import { Link, useLocation } from '@tanstack/react-router';
 import { Bell, Bot, Compass, Handshake, Home, Loader2, MapPin, MessageCircle, Plus, Search, ShieldCheck, User, Link2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useQoshul } from './context';
 import { cities, findCity } from '@/lib/qoshul/cities';
 import { allCategories, categoryGroups } from '@/lib/qoshul/categories';
 import { LazyMap } from './lazy-map';
 import { streamAi } from './ai-client';
+import { useQuery } from '@tanstack/react-query';
+import { useServerFn } from '@tanstack/react-start';
+import { listPartners } from '@/lib/qoshul/partners.functions';
+import { nearbyVenues, type Venue } from '@/lib/qoshul/venue-selection';
 const nav=[{to:'/' as const,label:'Ana səhifə',icon:Home},{to:'/explore' as const,label:'Kəşf et',icon:Compass},{to:'/chats' as const,label:'Söhbətlər',icon:MessageCircle},{to:'/profile' as const,label:'Profil',icon:User}];
 
-export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolean;onOpenChange:(open:boolean)=>void;partner?:boolean}) {
+export function CreateEventDialog({open,onOpenChange,partner=false,venue=null}:{open:boolean;onOpenChange:(open:boolean)=>void;partner?:boolean;venue?:Venue|null}) {
  const {addEvent,profileName,city:currentCity}=useQoshul();
  const [city,setCity]=useState(partner?'Bakı':currentCity);
  const [pos,setPos]=useState<{lat:number;lng:number}|null>(null);
@@ -18,8 +22,13 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  const [paid,setPaid]=useState(false);const [format,setFormat]=useState<'Oflayn'|'Onlayn'>('Oflayn');
  const [title,setTitle]=useState('');const [description,setDescription]=useState('');const [time,setTime]=useState('');const [capacity,setCapacity]=useState(8);
  const [idea,setIdea]=useState('');const [aiBusy,setAiBusy]=useState(false);const [aiError,setAiError]=useState('');
+ const [location,setLocation]=useState('');const [selectedVenue,setSelectedVenue]=useState<Venue|null>(null);const [saving,setSaving]=useState(false);const [saveError,setSaveError]=useState('');
+ const fetchPartners=useServerFn(listPartners);const partners=useQuery({queryKey:['partners'],queryFn:()=>fetchPartners(),enabled:open});
+ useEffect(()=>{if(open&&venue){setSelectedVenue(venue);setCity(venue.city);setPos(venue);setLocation(venue.name+', '+venue.address);}},[open,venue]);
  const c=findCity(city);const point=pos??{lat:c.lat,lng:c.lng};
- const onPick=useCallback((p:{lat:number;lng:number})=>setPos(p),[]);
+ const onPick=useCallback((p:{lat:number;lng:number})=>{setPos(p);setSelectedVenue(null);},[]);
+ const venues=nearbyVenues(partners.data??[],category,point);
+ function chooseVenue(v:Venue){setSelectedVenue(v);setCity(v.city);setPos(v);setLocation(v.name+', '+v.address);}
  async function suggest(){
   if(!idea.trim())return;setAiBusy(true);setAiError('');
   try{const text=await streamAi({mode:'suggest',city,idea});const s=JSON.parse(text) as {title:string;description:string;category:string;time:string;capacity:number};
@@ -28,16 +37,16 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  }
  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="qoshul-dialog"><DialogTitle>Birlikdə yeni plan quraq</DialogTitle><DialogDescription>İstədiyin formada tədbir yarat və maraqlarını bölüşən insanlarla tanış ol.</DialogDescription>
  <div className="ai-box"><label className="form-field"><span className="flex items-center gap-2"><Wand2 size={14}/>AI köməkçisi: fikrini qısa yaz</span><input className="form-input" value={idea} onChange={e=>setIdea(e.target.value)} placeholder="Məsələn, şənbə səhəri dağa yürüş"/></label><Button type="button" variant="secondary" className="w-full mt-2" disabled={aiBusy||!idea.trim()} onClick={suggest}>{aiBusy?<><Loader2 className="animate-spin"/>Hazırlanır...</>:<><Wand2/>Tədbiri AI ilə doldur</>}</Button>{aiError&&<p className="form-error" role="alert">{aiError}</p>}</div>
-  <form onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);const cat=category==='Digər'&&custom.trim()?custom.trim():category;const price=Number(f.get('price')||0);
-   addEvent({title,category:cat,city,location:format==='Onlayn'?'Onlayn görüş':String(f.get('location')),lat:point.lat,lng:point.lng,date:String(f.get('date')),time,capacity,description,
-    price:paid?price:0,ageLimit:String(f.get('age')||'Hamı üçün'),language:String(f.get('language')),level:String(f.get('level')),format,approval:f.get('approval')==='on',recurring:String(f.get('recurring')),tags:String(f.get('tags')||'').split(',').map(t=>t.trim()).filter(Boolean),partnerId:null});onOpenChange(false);}}>
+  <form onSubmit={async e=>{e.preventDefault();if(saving)return;setSaving(true);setSaveError('');const f=new FormData(e.currentTarget);const cat=category==='Digər'&&custom.trim()?custom.trim():category;const price=Number(f.get('price')||0);
+   try{await addEvent({title,category:cat,city,location:format==='Onlayn'?'Onlayn görüş':location,lat:point.lat,lng:point.lng,date:String(f.get('date')),time,capacity,description,
+    price:paid?price:0,ageLimit:String(f.get('age')||'Hamı üçün'),language:String(f.get('language')),level:String(f.get('level')),format,approval:f.get('approval')==='on',recurring:String(f.get('recurring')),tags:String(f.get('tags')||'').split(',').map(t=>t.trim()).filter(Boolean),partnerId:format==='Oflayn'?selectedVenue?.id??null:null});onOpenChange(false);}catch(err){setSaveError(err instanceof Error?err.message:'Tədbir yaradılmadı.');}finally{setSaving(false);}}}>
  <label className="form-field">Tədbirin adı<input required maxLength={65} className="form-input" value={title} onChange={e=>setTitle(e.target.value)} placeholder="Məsələn, şənbə günü qəhvə görüşü"/></label>
  <label className="form-field">Kateqoriya<select className="form-input" value={category} onChange={e=>setCategory(e.target.value)}>{categoryGroups.map(g=><optgroup key={g.group} label={g.group}>{g.items.map(i=><option key={i}>{i}</option>)}</optgroup>)}</select></label>
  {category==='Digər'&&<label className="form-field">Öz kateqoriyanı yaz<input className="form-input" required value={custom} onChange={e=>setCustom(e.target.value)} maxLength={40}/></label>}
  <div className="grid grid-cols-2 gap-3"><label className="form-field">Format<select className="form-input" value={format} onChange={e=>setFormat(e.target.value as 'Oflayn'|'Onlayn')}><option>Oflayn</option><option>Onlayn</option></select></label>
- <label className="form-field">Şəhər<select className="form-input" value={city} onChange={e=>{setCity(e.target.value);setPos(null);}}>{cities.map(x=><option key={x.name}>{x.name}</option>)}</select></label></div>
- {format==='Oflayn'&&<><label className="form-field">Məkan və ünvan<input name="location" required className="form-input" defaultValue={partner?'Coffee Moffie, Nizami küçəsi':''} placeholder="Məkanın adı və ünvanı"/></label>
- <p className="form-hint"><MapPin size={12}/>Xəritədə toxunaraq dəqiq nöqtəni seç</p><LazyMap events={[]} center={point} me={point} zoom={13} onPick={onPick}/></>}
+ <label className="form-field">Şəhər<select className="form-input" value={city} onChange={e=>{setCity(e.target.value);setPos(null);setSelectedVenue(null);}}>{cities.map(x=><option key={x.name}>{x.name}</option>)}</select></label></div>
+ {format==='Oflayn'&&<><label className="form-field">Məkan və ünvan<input name="location" required className="form-input" value={location} onChange={e=>{setLocation(e.target.value);setSelectedVenue(null);}} placeholder="Məkanın adı və ünvanı"/></label>
+ <p className="form-hint"><MapPin size={12}/>Xəritədə toxunaraq dəqiq nöqtəni seç</p><LazyMap events={[]} center={point} me={point} zoom={13} onPick={onPick} venues={venues} onVenue={chooseVenue}/>{venues.length>0&&<div className="chat-list">{venues.slice(0,3).map(v=><Button key={v.id} variant={selectedVenue?.id===v.id?"secondary":"ghost"} className="chat-row" onClick={()=>chooseVenue(v)} type="button"><Handshake/><span>{v.name} · {v.address}</span></Button>)}</div>}</>}
  <div className="grid grid-cols-2 gap-3"><label className="form-field">Tarix<input type="date" name="date" required className="form-input"/></label><label className="form-field">Saat<input type="time" required className="form-input" value={time} onChange={e=>setTime(e.target.value)}/></label></div>
  <div className="grid grid-cols-2 gap-3"><label className="form-field">İştirakçı sayı<input type="number" min={2} max={500} required value={capacity} onChange={e=>setCapacity(Number(e.target.value))} className="form-input"/></label>
  <label className="form-field">Təkrarlanma<select name="recurring" className="form-input"><option>Bir dəfəlik</option><option>Hər həftə</option><option>İki həftədən bir</option><option>Hər ay</option></select></label></div>
@@ -47,7 +56,7 @@ export function CreateEventDialog({open,onOpenChange,partner=false}:{open:boolea
  <label className="form-field">Səviyyə<select name="level" className="form-input"><option>Hamı üçün</option><option>Başlanğıc</option><option>Orta</option><option>Peşəkar</option></select></label></div>
  <label className="form-field">Teqlər (vergüllə)<input name="tags" className="form-input" placeholder="tələbələr, açıq hava, pulsuz"/></label>
  <label className="flex items-center gap-3 text-sm mt-3"><input type="checkbox" name="approval"/>Qoşulma istəklərini özüm təsdiqləyim</label>
- <label className="form-field">Tədbir haqqında<textarea required className="form-input" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Birlikdə nə edəcəyik?"/></label><Button type="submit" className="mt-5 w-full">Tədbir yarat <Plus/></Button></form></DialogContent></Dialog>;
+ <label className="form-field">Tədbir haqqında<textarea required className="form-input" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Birlikdə nə edəcəyik?"/></label>{saveError&&<p className="form-error" role="alert">{saveError}</p>}<Button disabled={saving} type="submit" className="mt-5 w-full">{saving?<Loader2 className="animate-spin"/>:<Plus/>}{saving?"Yaradılır...":"Tədbir yarat"}</Button></form></DialogContent></Dialog>;
 }
 
 export function CityPicker({open,onOpenChange}:{open:boolean;onOpenChange:(o:boolean)=>void}){

@@ -63,3 +63,12 @@ export const listPartners = createServerFn({ method: 'GET' }).handler(async () =
   if (error) throw error;
   return data ?? [];
 });
+
+export const updatePartner = createServerFn({method:'POST'})
+  .middleware([requireSupabaseAuth])
+  .inputValidator(d=>partnerInput.omit({voen:true}).parse(d))
+  .handler(async({data,context})=>{
+    const {data:row,error}=await context.supabase.from('partners').update(data).eq('owner_id',context.userId).select('id').single();
+    if(error||!row)throw new Error('Məkan məlumatları yenilənmədi.');
+    return {ok:true};
+  });

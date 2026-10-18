@@ -23,7 +23,7 @@ export function QoshulProvider({children}:{children:ReactNode}) {
  const [uid,setUid]=useState<string|null>(null);
  useEffect(()=>{supabase.auth.getUser().then(r=>setUid(r.data.user?.id??null));const {data}=supabase.auth.onAuthStateChange((_e,s)=>setUid(s?.user.id??null));return()=>data.subscription.unsubscribe();},[]);
  const ev=useQuery({queryKey:['events'],queryFn:()=>list()});
- const mine=useQuery({queryKey:['my-events',uid],enabled:!!uid,queryFn:async()=>{const [j,s,p]=await Promise.all([supabase.from('event_participants').select('event_id').eq('user_id',uid!),supabase.from('saved_events').select('event_id').eq('user_id',uid!),supabase.from('profiles').select('first_name,last_name,xp,city').eq('id',uid!).maybeSingle()]);return {joined:(j.data??[]).map(x=>x.event_id),saved:(s.data??[]).map(x=>x.event_id),profile:p.data};}});
+ const mine=useQuery({queryKey:['my-events',uid],enabled:!!uid,queryFn:async()=>{if(!uid)return {joined:[],saved:[],profile:null};const [j,s,p]=await Promise.all([supabase.from('event_participants').select('event_id').eq('user_id',uid),supabase.from('saved_events').select('event_id').eq('user_id',uid),supabase.from('profiles').select('first_name,last_name,xp,city').eq('id',uid).maybeSingle()]);return {joined:(j.data??[]).map(x=>x.event_id),saved:(s.data??[]).map(x=>x.event_id),profile:p.data};}});
  const joined=mine.data?.joined??[];const saved=mine.data?.saved??[];const xp=mine.data?.profile?.xp??0;
  const [nameOverride,setProfileName]=useState('');const profileName=nameOverride||[mine.data?.profile?.first_name,mine.data?.profile?.last_name].filter(Boolean).join(' ')||'Qonaq';
  const [city,setCityState]=useState('Bakı');

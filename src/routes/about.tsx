@@ -16,7 +16,7 @@ function About() {
       <p>Qoshul.az — Azərbaycanda yaşayan gənclərin eyni maraqlar ətrafında bir araya gəlməsi üçün yaradılmış platformadır. Məqsədimiz şəhərində sənə yaxın insanları tapmağı və birlikdə vaxt keçirməyi asanlaşdırmaqdır.</p>
       <p>Tədbirlərə qoşul, öz tədbirini yarat, XP topla və AI köməkçisi ilə sənə ən uyğun insanları kəşf et.</p>
       <p>Tərəfdaş məkanlar üçün: biznes kimi qeydiyyatdan keçin, rezervasiyaları və müştəri axınını öz panelinizdən idarə edin.</p>
-      <p>Əlaqə: destek@qoshul.az</p>
+      <p>Dəstək əlaqə məlumatları təsdiqləndikdən sonra burada göstəriləcək.</p>
     </div>
   </main></div>;
 }

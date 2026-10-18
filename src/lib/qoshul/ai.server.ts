@@ -1,4 +1,6 @@
 import { allCategories } from './categories';
+import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
 
 const GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 export const AI_MODEL = 'google/gemini-3-flash-preview';
@@ -90,10 +92,25 @@ export async function handleAi(request: Request) {
   const apiKey = process.env['LOVABLE_API_KEY'];
   if (!apiKey) return Response.json({ error: 'AI xidməti qurulmayıb.' }, { status: 500 });
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (!token || !(await verifyUser(token))) return Response.json({ error: 'Davam etmək üçün daxil ol.' }, { status: 401 });
+  const user = token ? await verifyUser(token) : null;
+  if (!user || !token) return Response.json({ error: 'Davam etmək üçün daxil ol.' }, { status: 401 });
   let body: Body;
-  try { body = await request.json(); } catch { return Response.json({ error: 'Yanlış sorğu.' }, { status: 400 }); }
-  if (!body || !['chat', 'suggest', 'recommend'].includes((body as Body).mode)) return Response.json({ error: 'Yanlış sorğu.' }, { status: 400 });
+  const city = z.string().min(1).max(100);
+  const schema = z.discriminatedUnion('mode', [
+    z.object({mode:z.literal('chat'),city,events:z.string().max(20000),messages:z.array(z.object({role:z.enum(['user','assistant']),content:z.string().max(10000)})).min(1).max(100)}),
+    z.object({mode:z.literal('suggest'),city,idea:z.string().min(1).max(1000)}),
+    z.object({mode:z.literal('recommend'),city,interests:z.array(z.string().max(100)).max(100),events:z.array(z.object({id:z.string().uuid(),title:z.string().max(100),category:z.string().max(100)})).max(300)})
+  ]);
+  try { body = schema.parse(await request.json()); } catch { return Response.json({ error: 'Yanlış sorğu.' }, { status: 400 }); }
+  const url = process.env['SUPABASE_URL']; const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if (!url || !key) return Response.json({error:'Məlumat xidməti hazır deyil.'},{status:503});
+  const db = createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:`Bearer ${token}`}}});
+  const {data:profile} = await db.from('profiles').select('first_name,city,interests,goals,personality').eq('id',user.id).maybeSingle();
+  if(body.mode==='recommend') body.interests=profile?.interests??[];
+  if(body.mode==='chat') {
+    const {data:partners}=await db.from('partners').select('name,city,address,categories').eq('status','approved');
+    body.me=JSON.stringify(profile??{});body.partners=JSON.stringify(partners??[]);
+  }
 
   let upstream: Response;
   try { upstream = await callGateway(apiKey, buildRequest(body), request.signal); }
@@ -107,14 +124,14 @@ export async function handleAi(request: Request) {
       buffer = parseFrames(buffer, t => controller.enqueue(encoder.encode(t)), () => controller.enqueue(encoder.encode('\n[AI xətası baş verdi]')));
     },
   }));
-  return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache, no-transform' } });
+  return new Response(out, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'private, no-store, no-transform' } });
 }
 
 async function verifyUser(token: string) {
   const url = process.env['SUPABASE_URL']; const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
-  if (!url || !key) return false;
+  if (!url || !key) return null;
   const r = await fetch(`${url}/auth/v1/user`, { headers: { apikey: key, Authorization: `Bearer ${token}` } });
-  return r.ok;
+  return r.ok ? await r.json() as {id:string} : null;
 }
 
 /** Streams a call with a strict JSON schema and returns the parsed object. */

@@ -9,7 +9,7 @@ import { getMatches, deleteAccount, type PersonalityResult } from '@/lib/qoshul/
 import { statusLabel } from '@/lib/qoshul/onboarding';
 import { TraitBars } from '@/routes/_authenticated/onboarding';
 
-async function myId() { const { data } = await supabase.auth.getUser(); return data.user!.id; }
+async function myId() { const { data } = await supabase.auth.getUser(); if(!data.user)throw new Error('Davam etmək üçün daxil ol.');return data.user.id; }
 
 export function AiPeople() {
   const fetchMatches = useServerFn(getMatches);
@@ -28,7 +28,7 @@ export function AiPeople() {
 
   if (q.isLoading) return <div className="empty-state"><Loader2 className="animate-spin" />AI sənə uyğun insanları qiymətləndirir...</div>;
   if (q.error) return <div className="empty-state"><p className="form-error">{q.error instanceof Error ? q.error.message : 'Uyğunluqlar alınmadı.'}</p><Button className="mt-3" onClick={() => q.refetch()}>Yenidən cəhd et</Button></div>;
-  const d = q.data!;
+  const d = q.data;if(!d)return null;
   return <>
     <div className="ai-box flex items-center justify-between gap-3"><p className="text-sm">AI profilinə, maraqlarına və şəxsiyyətinə görə qiymətləndirdi{d.cached ? ' (son 24 saat)' : ''}.</p><Button size="sm" onClick={refresh} disabled={refreshing}>{refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}Yenilə</Button></div>
     {!d.people.length && <div className="empty-state"><UserRound />Hələ sənə uyğun profil tapılmadı.<br />Şəhərində yeni istifadəçilər qoşulduqca burada görünəcək.</div>}
@@ -60,7 +60,7 @@ export function MyProfilePanel() {
   if (!p) return null;
   const vis = p.visibility as { education: boolean; work: boolean };
   const pers = p.personality as PersonalityResult | null;
-  async function toggle(k: 'education' | 'work') { await supabase.from('profiles').update({ visibility: { ...vis, [k]: !vis[k] } }).eq('id', p!.id); qc.invalidateQueries({ queryKey: ['my-profile'] }); }
+  async function toggle(k: 'education' | 'work') { await supabase.from('profiles').update({ visibility: { ...vis, [k]: !vis[k] } }).eq('id', p?.id ?? ''); qc.invalidateQueries({ queryKey: ['my-profile'] }); }
   async function logout() { await supabase.auth.signOut(); navigate({ to: '/auth' }); }
   async function remove() { if (!confirm('Hesabın və bütün məlumatların birdəfəlik silinsin?')) return; await del(); await supabase.auth.signOut(); navigate({ to: '/' }); }
   return <section className="mt-4">
@@ -68,10 +68,5 @@ export function MyProfilePanel() {
     <h2 className="font-bold text-sm">Maraqlarım</h2><div className="interest-tags">{p.interests.map(i => <span key={i}>{i}</span>)}</div>
     {pers && <div className="community-banner mt-4" style={{ display: 'block' }}><h3 className="flex items-center gap-2"><Sparkles size={15} />{pers.type}</h3><p>{pers.summary}</p><TraitBars traits={pers.traits} /></div>}
     <div className="flex flex-wrap gap-2 mt-4"><Button asChild variant="outline" size="sm"><Link to="/onboarding">Anketi və testi yenilə</Link></Button></div>
-    <h2 className="font-bold text-sm mt-5">Məxfilik</h2>
-    <label className="flex items-center gap-3 text-sm mt-2"><input type="checkbox" checked={vis.education} onChange={() => toggle('education')} />Təhsil məlumatımı göstər</label>
-    <label className="flex items-center gap-3 text-sm mt-2"><input type="checkbox" checked={vis.work} onChange={() => toggle('work')} />İş məlumatımı göstər</label>
-    <p className="form-hint">Doğum tarixin heç vaxt başqalarına göstərilmir.</p>
-    <div className="flex flex-wrap gap-2 mt-4 mb-4"><Button variant="outline" size="sm" onClick={logout}><LogOut />Çıxış</Button><Button variant="ghost" size="sm" className="text-destructive" onClick={remove}><Trash2 />Hesabı sil</Button></div>
   </section>;
 }

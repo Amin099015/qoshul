@@ -255,3 +255,7 @@ textarea.form-input { height: 85px; padding-top: 11px; resize: vertical; }
 .city-item:hover, .city-item.active { background: var(--secondary); }
 .city-item.active strong { color: var(--primary); }
 .interest-tags button { cursor: pointer; padding: 8px 12px; background: var(--secondary); color: var(--primary); font-size: 12px; border-radius: 10px; text-align: left; }
+
+.current-map-position { stroke: var(--primary); fill: var(--primary); fill-opacity: .6; }
+.chat-message { overflow-wrap: anywhere; }
+.recommendations > div { flex: 0 0 290px; min-width: 0; }
