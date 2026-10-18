@@ -4,6 +4,8 @@ import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 're
 import { useEffect } from 'react';
 import type { QoshulEvent } from '@/lib/qoshul/data';
 import { directionsUrl } from '@/lib/qoshul/rules';
+import type { Venue } from '@/lib/qoshul/venue-selection';
+import { Button } from '@/components/ui/button';
 
 const icon = (label: string) => L.divIcon({ className: 'map-pin', html: `<span>${label}</span>`, iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -30] });
 
@@ -13,13 +15,14 @@ function Recenter({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }
   return null;
 }
 
-export default function EventMap({ events, center, me, zoom = 13, onPick }: { events: QoshulEvent[]; center: { lat: number; lng: number }; me?: { lat: number; lng: number } | null; zoom?: number; onPick?: (p: { lat: number; lng: number }) => void }) {
+export default function EventMap({ events, center, me, zoom = 13, onPick, venues = [], onVenue }: { events: QoshulEvent[]; center: { lat: number; lng: number }; me?: { lat: number; lng: number } | null; zoom?: number; onPick?: (p: { lat: number; lng: number }) => void; venues?: Venue[]; onVenue?: (venue: Venue) => void }) {
   return (
     <MapContainer center={[center.lat, center.lng]} zoom={zoom} className="event-map" scrollWheelZoom={false}>
       <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Recenter lat={center.lat} lng={center.lng} zoom={zoom} />
       {onPick && <PickHandler onPick={onPick} />}
-      {me && <CircleMarker center={[me.lat, me.lng]} radius={9} pathOptions={{ color: '#16a34a', fillColor: '#16a34a', fillOpacity: 0.6 }} />}
+      {me && <CircleMarker className="current-map-position" center={[me.lat, me.lng]} radius={9} />}
+      {venues.map(v => <Marker key={v.id} position={[v.lat, v.lng]} icon={icon('★')}><Popup><strong>{v.name}</strong><br />{v.address}<br /><Button size="sm" onClick={() => onVenue?.(v)}>Bu məkanda keçir</Button></Popup></Marker>)}
       {events.map(e => (
         <Marker key={e.id} position={[e.lat, e.lng]} icon={icon(e.category.slice(0, 2))}>
           <Popup>

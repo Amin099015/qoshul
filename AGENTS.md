@@ -10,8 +10,9 @@
 <!-- LOVABLE:END -->
 
 ## App architecture
-- Keep Qoshul's mobile shell and sample event state in shared browser-safe components and context so all content routes share navigation and event actions.
-- This mobile variation uses in-memory demo data; do not present mock matching or messages as connected AI or realtime services.
+- Keep Qoshul's mobile shell and Cloud-backed event state in shared browser-safe components and context so all content routes share navigation and event actions.
+- Persist chats in Cloud with participant-scoped RLS and refresh via subscriptions with polling fallback; never show fabricated participants or match percentages as real results.
+- Keep venue-category selection in a pure tested module and pass venues into the lazy map, so event and partner map rendering remain SSR-safe.
 - Define product rules in a pure module with focused tests so XP and rank boundaries remain consistent across screens.
 - Cities and categories live in pure catalog modules under src/lib/qoshul so every screen and the AI prompts share one list.
 - Maps load Leaflet only in the browser via a lazy wrapper, because Leaflet touches window and would break SSR.
