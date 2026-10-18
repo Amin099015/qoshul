@@ -12,7 +12,7 @@ export function EventCard({event,recommended=false}:{event:QoshulEvent;recommend
  const isJoined=joined.includes(event.id);const isFull=event.participants>=event.capacity;
  return <><article className="event-card">
   <div className="event-image"><img src={event.image} alt={event.title} loading="lazy" width={1024} height={768}/>
-   {recommended&&<span className="match-badge"><Sparkles size={12}/>{event.match}% uyğunluq</span>}
+   {recommended&&<span className="match-badge"><Sparkles size={12}/>Tədbir təklifi</span>}
    <Button variant="ghost" size="icon" className={`save-button ${saved.includes(event.id)?'saved':''}`} aria-label={saved.includes(event.id)?'Yaddaşdan sil':'Yadda saxla'} title="Yadda saxla" onClick={()=>toggleSave(event.id)}><Bookmark fill={saved.includes(event.id)?'currentColor':'none'}/></Button>
    <span className="distance-badge"><MapPin size={12}/>{event.distance} km</span>
   </div>
@@ -20,7 +20,6 @@ export function EventCard({event,recommended=false}:{event:QoshulEvent;recommend
    <Button variant="ghost" className="event-title" onClick={()=>setOpen(true)}>{event.title}</Button>
    <div className="event-meta"><MapPin/>{event.location}</div><div className="event-meta"><CalendarDays/>{event.date}, {event.time}</div>
    <div className="event-footer"><div><AvatarStack/><p className="spots">{event.participants} nəfər qoşulub · {event.capacity-event.participants} yer qalıb</p></div><Button className="join-button" variant={isJoined?'secondary':'default'} disabled={isFull&&!isJoined} onClick={()=>isJoined?setOpen(true):join(event.id)}>{isJoined?<><Check/>Qoşuldun</>:isFull?'Yer yoxdur':<>Qoşul<ArrowUpRight/></>}</Button></div>
-   {recommended&&<p className="match-explanation"><Sparkles size={10}/>Maraqlarına əsaslanan nümunə tövsiyə</p>}
   </div>
  </article><Dialog open={open} onOpenChange={setOpen}><DialogContent className="qoshul-dialog"><img className="dialog-photo" src={event.image} alt={event.title}/><DialogTitle>{event.title}</DialogTitle><DialogDescription>{event.host} tərəfindən təşkil olunur</DialogDescription><p className="dialog-body">{event.description}</p><div className="detail-facts"><div className="event-meta"><CalendarDays/>{event.date}, {event.time}</div><div className="event-meta"><Users/>{event.capacity-event.participants} boş yer</div><div className="event-meta"><MapPin/>{event.location}</div><div className="event-meta"><Trophy/>+50 XP</div>{event.price?<div className="event-meta">{event.price} AZN</div>:<div className="event-meta">Pulsuz</div>}{event.level&&<div className="event-meta">{event.level}</div>}{event.language&&<div className="event-meta">{event.language}</div>}</div>{event.format!=='Onlayn'&&<Button variant="outline" asChild><a href={directionsUrl(event.lat,event.lng)} target="_blank" rel="noopener noreferrer"><Navigation/>Yol göstər ({event.distance} km)</a></Button>}{isJoined?<Button asChild><Link to="/chats">Qrup söhbətinə keç <ArrowUpRight/></Link></Button>:<Button disabled={isFull} onClick={()=>join(event.id)}>{isFull?'Yer yoxdur':'Tədbirə qoşul'}</Button>}</DialogContent></Dialog></>;
 }
