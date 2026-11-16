@@ -11,7 +11,7 @@ import type { eventInput } from '@/lib/qoshul/event-input';
 export type NewEvent=z.input<typeof eventInput>;
 interface AppState {
  events: QoshulEvent[]; cityEvents: QoshulEvent[]; joined: string[]; saved: string[]; xp: number;
- join: (id:string)=>Promise<void>; toggleSave:(id:string)=>Promise<void>; addEvent:(event:NewEvent)=>Promise<void>; signedIn:boolean;
+ join: (id:string)=>Promise<void>; toggleSave:(id:string)=>Promise<void>; addEvent:(event:NewEvent)=>Promise<void>; signedIn:boolean; loadError:boolean; retryLoad:()=>void;
  profileName: string; setProfileName:(name:string)=>void;
  city: string; setCity:(c:string)=>void; myPos: {lat:number;lng:number}|null; setMyPos:(p:{lat:number;lng:number}|null)=>void;
 }
@@ -43,6 +43,6 @@ export function QoshulProvider({children}:{children:ReactNode}) {
  }
  async function addEvent(event:NewEvent){if(!need())return;await create({data:event});await refresh();}
  async function toggleSave(id:string){if(!need())return;await saveFn({data:{id,saved:saved.includes(id)}});await refresh();}
- return <Context.Provider value={{events,cityEvents,joined,saved,xp,join,toggleSave,addEvent,signedIn:!!uid,profileName,setProfileName,city,setCity,myPos,setMyPos}}>{children}</Context.Provider>;
+ return <Context.Provider value={{events,cityEvents,joined,saved,xp,join,toggleSave,addEvent,signedIn:!!uid,loadError:ev.isError||mine.isError,retryLoad:()=>{void refresh();},profileName,setProfileName,city,setCity,myPos,setMyPos}}>{children}</Context.Provider>;
 }
 export function useQoshul(){ const value=useContext(Context);if(!value)throw new Error('QoshulProvider is required');return value; }
