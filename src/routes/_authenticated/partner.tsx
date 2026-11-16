@@ -27,6 +27,7 @@ function PartnerPanel() {
   }
 
   if (q.isLoading) return <Shell><div className="empty-state"><Loader2 className="animate-spin" />Panel yüklənir...</div></Shell>;
+  if (q.isError) return <Shell><div className="empty-state"><p className="form-error" role="alert">Panel yüklənmədi.</p><Button className="mt-3" onClick={() => q.refetch()}>Yenidən cəhd et</Button></div></Shell>;
   const d = q.data;
   if (!d?.partner) return <Shell><div className="empty-state"><Store size={38} /><h2 className="font-bold text-foreground mb-2">Hələ məkanın yoxdur</h2><p>Biznes kimi qeydiyyatdan keç, müştəri axınını buradan izlə.</p><Button asChild className="mt-5"><Link to="/partner-register">Biznes kimi qeydiyyat</Link></Button></div></Shell>;
 
